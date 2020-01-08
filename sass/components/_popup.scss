@@ -1,0 +1,132 @@
+.popup {
+
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba($color-black, 0.8);
+    position: fixed;
+    top: 0;
+    left: 0;    
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all .3s;   
+    
+
+    @supports(-webkit-backdrop-filter: blur(1rem)) or (backdrop-filter: blur(1rem)) {
+        -webkit-backdrop-filter: blur(1rem);
+        backdrop-filter: blur(1rem);
+        background-color: rgba($color-black, 0.4);
+    }
+
+    &__content {
+        @include absoluteCenter;
+        width: 75%;
+        background-color: $color-white;
+        box-shadow: $shadow-default;
+        border-radius: 3px;
+        display: table;
+        overflow: hidden;        
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+        transition: all .5s .2s;
+        
+    }
+
+    &__left {
+        width: 33.3333333%;
+        display: table-cell;
+
+        @include respond(tab-land) {
+            display: block;
+            width: 100%;
+            height: 25rem;
+            text-align: center;
+            padding-top: .5rem;
+        }
+
+        @include respond(tab-port) {
+            height: 22rem;
+        }
+
+        @include respond(phone) {
+            height: 18rem;
+        }
+    }
+
+    &__right {
+        width: 66.66666667%;
+        display: table-cell;
+        vertical-align: middle;
+        padding: 3rem 5rem;
+
+        @include respond(tab-land) {
+            display: block;
+            width: 100%;
+        }
+    }
+
+    &__img {
+        display: block;
+        width: 100%;
+
+        @include respond(tab-land) {
+            display: inline-block;
+            width: 49.5%;
+            height: 100%;
+        }
+
+    }
+
+    &__text {
+        font-size: 1.4rem;
+        margin-bottom: 4rem;
+
+
+        -moz-column-count: 2;
+        -moz-column-gap: 4rem;
+        -moz-column-rule: 2px solid $color-grey-light-2;
+
+        column-count: 2;
+        column-gap: 4rem;
+        column-rule: 2px solid $color-grey-light-2;
+
+        @include respond(tab-land) {
+            -moz-column-count: unset;
+            column-count: unset;
+        }
+
+        -moz-hyphens: auto;
+        -ms-hyphens: auto;
+        -webkit-hyphens: auto;
+        hyphens: auto;
+    }
+
+    &__close {
+        &:link,
+        &:visited{
+            color: $color-grey-dark;
+            position: absolute;
+            text-decoration: none;
+            font-size: 3rem;
+            top: 3rem;
+            right: 3rem;
+            line-height: 1;
+        }
+
+        &:hover {
+            color: $color-primary;
+            transform: scale(1.2);
+        }
+        
+    }
+
+    &:target {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    &:target &__content {
+        transform: translate(-50%, -50%) scale(1) ;
+        opacity: 1;
+    }
+}
