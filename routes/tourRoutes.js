@@ -14,6 +14,7 @@ router
 
 // Pipeline aggregation
 router.route('/tour-stats').get(tourController.getTourStats);
+router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 
 // Tours routes
 router
