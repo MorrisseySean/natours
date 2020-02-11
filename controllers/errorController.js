@@ -35,6 +35,7 @@ const sendProdError = (err, res) => {
   } else {
     // Programming or unknown errors. Don't leak to users.
     // 1) Log error
+    // eslint-disable-next-line no-console
     console.error('ERROR 💥', err);
     // 2) Send message to user
     res.status(500).json({
