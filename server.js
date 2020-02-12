@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // Define environment variables from file
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
