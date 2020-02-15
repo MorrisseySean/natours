@@ -1,8 +1,10 @@
+const crypto = require('crypto');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const sendEmail = require('./../utils/email.js');
 
 const signedToken = id => {
   return jwt.sign({ id: id }, process.env.JWT_SECRET, {
@@ -96,4 +98,74 @@ exports.restrictTo = (...roles) => {
     }
     next();
   };
+};
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  // Get user from email address
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new AppError('No user exists with that email address', 404));
+  }
+  // Generate reset token
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+
+  // Send via email
+  const resetURL = `${req.protocol}://${req.get(
+    'host'
+  )}/api/v1/users/resetPassword/${resetToken}`;
+
+  const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\n
+  If you didn't forget your password, please ignore this email`;
+  try {
+    await sendEmail({
+      email: req.body.email,
+      subject: 'Your password reset token (valid for 10 minutes)',
+      message: message
+    });
+
+    res.status(200).json({
+      status: `success`,
+      message: `Token sent to email`
+    });
+  } catch (err) {
+    user.createPasswordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    return next(
+      new AppError(
+        'There was an error sending the email. Please try again later',
+        500
+      )
+    );
+  }
+});
+exports.resetPassword = async (req, res, next) => {
+  // Get user from token
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() }
+  });
+
+  // Reset password if token hasn't expired and user exists
+  if (!user) {
+    return next(new AppError('Invalid or expired reset token'), 400);
+  }
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+
+  // Login the user
+  const token = signedToken(user.id);
+  res.status(200).json({
+    status: 'success',
+    token
+  });
 };
