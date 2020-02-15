@@ -12,6 +12,17 @@ const signedToken = id => {
   });
 };
 
+const createSendToken = (user, statusCode, res) => {
+  const token = signedToken(user._id);
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: {
+      user
+    }
+  });
+};
+
 exports.signup = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
     name: req.body.name,
@@ -19,16 +30,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm
   });
-
-  const token = signedToken(newUser._id);
-
-  res.status(201).json({
-    status: 'success',
-    token,
-    data: {
-      user: newUser
-    }
-  });
+  createSendToken(newUser, 201, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -42,13 +44,7 @@ exports.login = catchAsync(async (req, res, next) => {
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Incorrect email or password.', 401));
   }
-
-  const token = signedToken(user._id);
-
-  res.status(200).json({
-    status: 'success',
-    token
-  });
+  createSendToken(user, 200, res);
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -163,9 +159,26 @@ exports.resetPassword = async (req, res, next) => {
   await user.save();
 
   // Login the user
-  const token = signedToken(user.id);
-  res.status(200).json({
-    status: 'success',
-    token
-  });
+  createSendToken(user, 200, res);
+};
+
+exports.updatePassword = async (req, res, next) => {
+  // Get user
+  const user = await User.findById(req.user.id).select('+password');
+
+  // Check POSTed password
+  if (
+    !user ||
+    (await !user.correctPassword(req.body.password, user.password))
+  ) {
+    return next(new AppError('Something went wrong, please login again.'));
+  }
+
+  // Update password
+  user.password = req.body.passwordNew;
+  user.passwordConfirm = req.body.passwordConfirm;
+  await user.save();
+
+  // Relog user
+  createSendToken(user, 200, res);
 };

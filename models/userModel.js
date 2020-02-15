@@ -62,7 +62,7 @@ userSchema.pre('save', async function(next) {
 });
 
 // Update password changed at field when relevant
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', function(next) {
   if (!this.isModified('password') || this.isNew) return next();
   this.passwordChangedAt = Date.now() - 1000; // 1 second before due to delay before token is created
   next();
