@@ -16,6 +16,11 @@ const handleValidationErrorDB = err => {
   const message = `Invalid input data. ${errors.join(' ')}`;
   return new AppError(message, 400);
 };
+const handleJWTError = () =>
+  new AppError('Invalid login token. Please log in again.', 401);
+
+const handleJWTExpired = () =>
+  new AppError('Your login has timed out. Please log in again.', 401);
 
 const sendDevError = (err, res) => {
   res.status(err.statusCode).json({
@@ -55,9 +60,11 @@ module.exports = (err, req, res, next) => {
   } else if (process.env.NODE_ENV === 'production') {
     // Manage Mongoose errors
     let error = { ...err };
-    if (err.name === 'CastError') error = handleCastErrorDB(err);
-    if (err.code === 11000) error = handleDuplicateFieldDB(err);
-    if (err.name === 'ValidationError') error = handleValidationErrorDB(err);
+    if (err.name === 'CastError') error = handleCastErrorDB(error);
+    if (err.code === 11000) error = handleDuplicateFieldDB(error);
+    if (err.name === 'ValidationError') error = handleValidationErrorDB(error);
+    if (err.name === 'JsonWebTokenError') error = handleJWTError();
+    if (err.name === 'TokenExpiredError') error = handleJWTExpired();
     sendProdError(error, res);
   }
 };
