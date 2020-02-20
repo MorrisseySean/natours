@@ -82,6 +82,7 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
   });
 });
 
+// Users can update own information
 exports.updateMe = catchAsync(async (req, res, next) => {
   // Create error if user tries to update password
   if (req.body.password || req.body.passwordConfirm) {
@@ -105,6 +106,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   });
 });
 
+// Allow users to delete self
 exports.deleteMe = catchAsync(async (req, res, next) => {
   await User.findByIdAndUpdate(req.user.id, { active: false });
   res.status(204).json({
