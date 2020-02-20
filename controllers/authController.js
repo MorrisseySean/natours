@@ -171,7 +171,9 @@ exports.updatePassword = async (req, res, next) => {
     !user ||
     (await !user.correctPassword(req.body.password, user.password))
   ) {
-    return next(new AppError('Something went wrong, please login again.'));
+    return next(
+      new AppError('Your current password is incorrect. Please try again', 401)
+    );
   }
 
   // Update password
