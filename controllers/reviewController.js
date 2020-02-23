@@ -1,6 +1,7 @@
 const Review = require('./../models/reviewModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const factory = require('./handlerFactory');
 
 exports.getAllReviews = catchAsync(async (req, res) => {
   let filter = {};
@@ -31,23 +32,12 @@ exports.getReview = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.createReview = catchAsync(async (req, res, next) => {
+exports.setTourId = (req, res, next) => {
   if (req.params.tourId) req.body.tour = req.params.tourId;
-  const newReview = await Review.create({
-    review: req.body.review,
-    rating: req.body.rating,
-    tour: req.body.tour,
-    user: req.user.id
-  });
-  if (!newReview) {
-    return next(
-      new AppError('Failed to create user. Please contact webmaster.', 404)
-    );
-  }
-  res.status(201).json({
-    status: 'success',
-    data: {
-      newReview
-    }
-  });
-});
+  req.body.user = req.user.id;
+  next();
+};
+
+exports.createReview = factory.createOne(Review);
+exports.deleteReview = factory.deleteOne(Review);
+exports.updateReview = factory.updateOne(Review);
