@@ -117,6 +117,13 @@ tourSchema.virtual('durationWeeks').get(function() {
   return this.duration / 7;
 });
 
+// Get related reviews using virtual populate
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id'
+});
+
 // Document Middleware
 // pre || Runs before save or create command. !insertMany()
 tourSchema.pre('save', function(next) {
