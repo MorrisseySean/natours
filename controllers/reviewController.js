@@ -3,8 +3,11 @@ const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 
 exports.getAllReviews = catchAsync(async (req, res) => {
-  const reviews = await Review.find();
-
+  let filter = {};
+  if (req.params.tourId) {
+    filter = { tour: req.params.tourId };
+  }
+  const reviews = await Review.find(filter);
   res.status(200).json({
     status: 'success',
     results: reviews.length,
@@ -28,17 +31,8 @@ exports.getReview = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getReviewByTour = catchAsync(async (req, res, next) => {
-  const reviews = await Review.find({ tour: req.params.tourID });
-  res.status(200).json({
-    status: 'success',
-    data: {
-      reviews
-    }
-  });
-});
-
 exports.createReview = catchAsync(async (req, res, next) => {
+  if (req.params.tourId) req.body.tour = req.params.tourId;
   const newReview = await Review.create({
     review: req.body.review,
     rating: req.body.rating,
