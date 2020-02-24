@@ -34,6 +34,12 @@ exports.getAllUsers = factory.getAll(User);
 exports.updateUser = factory.updateOne(User);
 exports.deleteUser = factory.deleteOne(User);
 
+// User can retrieve own information
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
+};
+
 // Users can update own information
 exports.updateMe = catchAsync(async (req, res, next) => {
   // Create error if user tries to update password
