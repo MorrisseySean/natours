@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
@@ -12,9 +13,18 @@ const globalErrorHandler = require('./controllers/errorController');
 // Router modules
 const tourRouter = require(`./routes/tourRoutes`);
 const userRouter = require(`./routes/userRoutes`);
-const reviewRouter = require('./routes/reviewRoutes');
+const reviewRouter = require(`./routes/reviewRoutes`);
+const viewRouter = require(`./routes/viewRoutes`);
 
 const app = express();
+
+// Use pug for template rendering
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+
+// Serving static files
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Third Party Middleware
 // Set security HTTP headers
 app.use(helmet());
@@ -56,15 +66,15 @@ app.use(
   })
 );
 
-// Serving static files
-app.use(express.static(`${__dirname}/public`));
-
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   next();
 });
 
+// ROUTES
+
 // Mounting router middleware on specific routes
+app.use('/', viewRouter);
 app.use('/api/v1/reviews', reviewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
