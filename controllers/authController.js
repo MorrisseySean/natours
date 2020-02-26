@@ -59,6 +59,14 @@ exports.login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
+exports.logout = (req, res) => {
+  res.cookie('JWT', 'loggedout', {
+    expires: new Date(Date.now() + 1000),
+    httpOnly: true
+  });
+  res.status(200).json({ status: 'success' });
+};
+
 exports.protect = catchAsync(async (req, res, next) => {
   // Get the JWT token
   let token;
@@ -67,6 +75,8 @@ exports.protect = catchAsync(async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer ')
   ) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.JWT) {
+    token = req.cookies.JWT;
   }
 
   if (!token) {
@@ -195,4 +205,33 @@ exports.updatePassword = async (req, res, next) => {
 
   // Relog user
   createSendToken(user, 200, res);
+};
+
+// Checks for a logged in user on rendered pages
+exports.isLoggedIn = async (req, res, next) => {
+  // Get the JWT token
+  if (req.cookies.JWT) {
+    try {
+      // Verification
+      const decoded = await promisify(jwt.verify)(
+        req.cookies.JWT,
+        process.env.JWT_SECRET
+      );
+
+      // ?User exists
+      const currentUser = await User.findById(decoded.id);
+      if (!currentUser) {
+        return next();
+      }
+      // ?Password change
+      if (currentUser.changedPassword(decoded.iat)) {
+        return next();
+      }
+      // User is logged in
+      res.locals.user = currentUser;
+    } catch {
+      return next();
+    }
+  }
+  next();
 };

@@ -3,3 +3,4 @@ dev-data
 .eslintrc.json
 .prettierrc
 config.env
+.cache
