@@ -22,7 +22,13 @@ exports.getTour = catchAsync(async (req, res, next) => {
     return next(new AppError(404, 'Tour not found'));
   }
   res.status(200).render('tour', {
-    title: tour.name,
+    title: `${tour.name} Tour`,
     tour
   });
 });
+
+exports.getLoginForm = (req, res) => {
+  res.status(200).render('login', {
+    title: 'Log in to your account'
+  });
+};
