@@ -104,6 +104,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // Grant access to the user
   req.user = currentUser;
+  res.locals.user = currentUser;
   next();
 });
 
@@ -189,10 +190,11 @@ exports.updatePassword = async (req, res, next) => {
   const user = await User.findById(req.user.id).select('+password');
 
   // Check POSTed password
-  if (
-    !user ||
-    (await !user.correctPassword(req.body.password, user.password))
-  ) {
+  const passCheck = await user.correctPassword(
+    req.body.password,
+    user.password
+  );
+  if (!user || !passCheck) {
     return next(
       new AppError('Your current password is incorrect. Please try again', 401)
     );
