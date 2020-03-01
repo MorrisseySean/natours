@@ -10,8 +10,6 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     const tour = await Tour.findById(req.params.tourID);
 
     if(!tour) return next(new AppError('No tour found', 404));
-    console.log('Connecting to stripe...');
-    console.log(req.protocol, req.params.tourID, req.user.id, tour.price);
     // Create a checkout session
     const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],

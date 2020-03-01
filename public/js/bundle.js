@@ -9036,7 +9036,6 @@ if (updatePasswordForm) {
 
 if (bookBtn) {
   bookBtn.addEventListener('click', function (e) {
-    console.log('Click');
     e.target.textContent = 'Processing...';
     var tourId = e.target.dataset.tourId;
     (0, _stripe.bookTour)(tourId);
